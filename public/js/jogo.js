@@ -68,3 +68,30 @@ function adicionarLog(texto) {
 btnAtacar.onclick = () => socket.emit('acaoDoJogador', { tipo: 'atacar' });
 btnDefender.onclick = () => socket.emit('acaoDoJogador', { tipo: 'defender' });
 btnHabilidade.onclick = () => socket.emit('acaoDoJogador', { tipo: 'habilidade' });
+
+const somAtaque = document.getElementById('somAtaque');
+const somMagia = document.getElementById('somMagia');
+const animacao = document.getElementById('animacao');
+
+btnAtacar.onclick = () => {
+  socket.emit('acaoDoJogador', { tipo: 'atacar' });
+  tocarSom(somAtaque);
+  mostrarAnimacao('espada');
+};
+
+btnHabilidade.onclick = () => {
+  socket.emit('acaoDoJogador', { tipo: 'habilidade' });
+  tocarSom(somMagia);
+  mostrarAnimacao('magia');
+};
+
+function tocarSom(som) {
+  som.currentTime = 0;
+  som.play();
+}
+
+function mostrarAnimacao(tipo) {
+  animacao.className = '';
+  void animacao.offsetWidth; // Reinicia a animação
+  animacao.classList.add(tipo);
+}

@@ -1,115 +1,206 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(#111, #000);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(#111, #000);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* background-image: url('../imagens/imagem-medieval.png');
+    background-size: cover;
+    background-position: center; */
+
 }
 
 h1 {
-  margin-top: 30px;
-  font-size: 2.5em;
-  color: #00e676;
-  text-shadow: 0 0 10px #00e676;
+    margin-top: 30px;
+    font-size: 2.5em;
+    color: #00e676;
+    text-shadow: 0 0 10px #00e676;
 }
 
 .painel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid #00e676;
-  border-radius: 16px;
-  padding: 20px;
-  width: 90%;
-  max-width: 800px;
-  margin: 20px auto;
-  box-shadow: 0 0 20px #00e67633;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid #00e676;
+    border-radius: 16px;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 0 20px #00e67633;
 }
 
 input[type="text"] {
-  padding: 12px;
-  width: 70%;
-  font-size: 1.1em;
-  border-radius: 8px;
-  border: none;
+    padding: 12px;
+    width: 70%;
+    font-size: 1.1em;
+    border-radius: 8px;
+    border: none;
 }
 
 button {
-  padding: 12px 24px;
-  margin: 10px;
-  font-size: 1em;
-  background: #00e676;
-  border: none;
-  color: #000;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-  box-shadow: 0 0 8px #00e676aa;
+    padding: 12px 24px;
+    margin: 10px;
+    font-size: 1em;
+    background: #00e676;
+    border: none;
+    color: #000;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 0 8px #00e676aa;
 }
 
 button:hover:not(:disabled) {
-  background: #00c853;
-  transform: scale(1.05);
+    background: #00c853;
+    transform: scale(1.05);
 }
 
 button:disabled {
-  background: #444;
-  cursor: not-allowed;
-  box-shadow: none;
+    background: #444;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .arena {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .player {
-  text-align: center;
-  width: 40%;
+    text-align: center;
+    width: 40%;
 }
 
 .vs {
-  font-size: 2em;
-  animation: pulse 1s infinite;
+    font-size: 2em;
+    animation: pulse 1s infinite;
 }
 
 .sprite {
-  width: 100px;
-  height: 100px;
-  animation: float 2s ease-in-out infinite;
+    width: 100px;
+    height: 100px;
+    animation: float 2s ease-in-out infinite;
 }
 
 .flip {
-  transform: scaleX(-1);
+    transform: scaleX(-1);
 }
 
 .info {
-  margin-top: 8px;
-  font-weight: bold;
+    margin-top: 8px;
+    font-weight: bold;
 }
 
 #log {
-  background-color: #111;
-  border-radius: 8px;
-  padding: 12px;
-  height: 150px;
-  overflow-y: auto;
-  font-size: 0.9em;
-  border: 1px solid #00e676;
+    background-color: #111;
+    border-radius: 8px;
+    padding: 12px;
+    height: 150px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    border: 1px solid #00e676;
 }
 
 @keyframes float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.2); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
 }
+
+
+
+
+  #painelEntrada, #painelJogo {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 30px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  
+  input, button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+  
+  button {
+    cursor: pointer;
+    background-color: #444;
+    color: white;
+    border: none;
+    transition: transform 0.2s;
+  }
+  
+  button:hover {
+    transform: scale(1.05);
+    background-color: #666;
+  }
+  
+  .log {
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 10px;
+    text-align: left;
+  }
+  
+  #animacao {
+    height: 150px;
+    margin: 20px auto;
+  }
+  
+  .espada {
+    animation: cortar 0.6s ease;
+    background: url('/imagens/espada.gif') center center no-repeat;
+    background-size: contain;
+    height: 100%;
+  }
+  
+  .magia {
+    animation: magia 1s ease;
+    background: url('/imagens/magia.gif') center center no-repeat;
+    background-size: contain;
+    height: 100%;
+  }
+  
+  @keyframes cortar {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes magia {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  

@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <title>Jogo de Turno RPG</title>
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magic/1.1.0/magic.min.css">
+
   <script src="/socket.io/socket.io.js"></script>
 
 </head>
-  <body>
-    <h1>⚔️ RPG de Turnos</h1>
-  
-    <div class="painel" id="painelEntrada">
-      <input type="text" id="nome" placeholder="Digite seu nome..." />
-      <button id="entrarBtn">Entrar</button>
-    </div>
-  
-    <div class="painel" id="painelJogo" style="display: none;">
-      <div class="arena">
-        <div class="player" id="player1">
-          <img src="https://kenney.nl/assets/characters/preview/character_0006.png" alt="Jogador 1" class="sprite" />
-          <div class="info"><span id="jogador1"></span></div>
-        </div>
-  
-        <div class="vs">VS</div>
-  
-        <div class="player" id="player2">
-          <img src="https://kenney.nl/assets/characters/preview/character_0012.png" alt="Jogador 2" class="sprite flip" />
-          <div class="info"><span id="jogador2"></span></div>
-        </div>
+
+<body>
+  <h1>⚔️ RPG de Turnos</h1>
+
+  <div class="painel" id="painelEntrada">
+    <input type="text" id="nome" placeholder="Digite seu nome..." />
+    <button id="entrarBtn">Entrar</button>
+  </div>
+
+  <div class="painel" id="painelJogo" style="display: none;">
+    <div class="arena">
+      <div class="player" id="player1">
+        <img src="https://kenney.nl/assets/characters/preview/character_0006.png" alt="Jogador 1" class="sprite" />
+        <div class="info"><span id="jogador1"></span></div>
       </div>
-  
-      <h2 id="statusTurno"></h2>
-  
-      <div class="btns">
-        <button id="btnAtacar">⚔️ Atacar</button>
-        <button id="btnDefender">🛡️ Defender</button>
-        <button id="btnHabilidade">✨ Habilidade</button>
+
+      <div class="vs">VS</div>
+
+      <div class="player" id="player2">
+        <img src="https://kenney.nl/assets/characters/preview/character_0012.png" alt="Jogador 2" class="sprite flip" />
+        <div class="info"><span id="jogador2"></span></div>
       </div>
-  
-      <div id="log"></div>
     </div>
-  
+
+    <h2 id="statusTurno"></h2>
+
+    <div class="btns">
+      <button id="btnAtacar">⚔️ Atacar</button>
+      <button id="btnDefender">🛡️ Defender</button>
+      <button id="btnHabilidade">✨ Habilidade</button>
+    </div>
+    <div id="animacao"></div>
+    <div id="log"></div>
+  </div>
+  <audio id="somAtaque" src="/sons/espada.mp3"></audio>
+  <audio id="somMagia" src="/sons/magia.mp3"></audio>
 
   <footer>&copy; Desenvolvido por Daniel S.</footer>
-<script src="js/jogo.js"></script>
-  </body>
-  
+  <script src="js/jogo.js"></script>
+</body>
+
 </html>
