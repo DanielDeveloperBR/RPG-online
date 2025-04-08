@@ -1,0 +1,29 @@
+{
+  "name": "jogoonline",
+  "version": "1.0.0",
+  "main": "index.js",
+ "scripts": {
+  "dev": "ts-node index.ts",
+  "build": "tsc",
+  "start": "node dist/backend/server.js"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "http": "^0.0.1-security",
+    "prompt-sync": "^4.2.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.0",
+    "@types/prompt-sync": "^4.2.3",
+    "@types/socket.io": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
