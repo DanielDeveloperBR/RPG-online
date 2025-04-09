@@ -27,12 +27,12 @@ interface Jogador {
 class RPG {
   jogador1: Jogador;
   jogador2: Jogador;
-  turno: string; // socket.id do jogador da vez
+  turno: string;
 
   constructor(j1: Jogador, j2: Jogador) {
     this.jogador1 = j1;
     this.jogador2 = j2;
-    this.turno = j1.socketId; // jogador1 começa
+    this.turno = j1.socketId;
   }
   verificarVitoria(): Jogador | null {
     if (this.jogador1.vida <= 0) return this.jogador2;
@@ -54,6 +54,15 @@ class RPG {
     if (tipo === 0) return 5 + Math.floor(Math.random() * 6);     // leve
     if (tipo === 1) return 10 + Math.floor(Math.random() * 11);   // médio
     return 20 + Math.floor(Math.random() * 16);                   // pesado
+  }
+  reiniciar(id: string) : void{
+    const jogador = this.getJogador(id)
+    const oponente = this.getOponente(id)
+    jogador.vida = 100
+    oponente.vida = 100
+    jogador.habilidadeUsada = false
+    oponente.habilidadeUsada = false
+    this.turno = id
   }
 
   aplicarAcao(socketId: string, acao: string): string {
@@ -91,9 +100,10 @@ let jogadores: { [id: string]: Jogador } = {};
 let jogo: RPG | null = null;
 
 io.on('connection', (socket) => {
-  console.log(`Jogador conectado: ${socket.id}`);
 
   socket.on('registrarJogador', (nome: string) => {
+  console.log(`Jogador registrado: ${socket.id} - Nome: ${nome}`);
+
     if (Object.keys(jogadores).length >= 2) {
       socket.emit('erro', 'Sala cheia!');
       return;
@@ -138,10 +148,11 @@ io.on('connection', (socket) => {
         turno: null,
         mensagem: `🏆 ${vencedor.nome} venceu a partida!`
       });
-      jogo = null;
-      jogadores = {};
+    
+      io.emit('mostrarBotaoReiniciar');
       return;
     }
+    
 
     const estado = {
       j1: jogo.jogador1,
@@ -151,10 +162,24 @@ io.on('connection', (socket) => {
     };
 
     io.emit('estadoAtual', estado);
-  });
 
+  });
+  socket.on('reiniciarPartida', () => {
+    if (!jogo) return;
+  
+    jogo.reiniciar(socket.id);
+  
+    io.emit('estadoAtual', {
+      j1: jogo.jogador1,
+      j2: jogo.jogador2,
+      turno: jogo.turno,
+      mensagem: '🔄 Jogo reiniciado!'
+    });
+  });
   socket.on('disconnect', () => {
-    console.log(`Jogador desconectado: ${socket.id}`);
+    const jogador = jogadores[socket.id];
+    const nome = jogador ? jogador.nome : 'Desconhecido';
+    console.log(`Jogador desconectado: ${socket.id} - Nome: ${nome}`)
     delete jogadores[socket.id];
     jogo = null;
     io.emit('mensagem', 'Um jogador saiu. A partida foi encerrada.');

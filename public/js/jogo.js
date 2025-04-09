@@ -10,6 +10,7 @@ const jogador1Span = document.getElementById('jogador1');
 const jogador2Span = document.getElementById('jogador2');
 const statusTurno = document.getElementById('statusTurno');
 const log = document.getElementById('log');
+const btnReiniciar = document.getElementById('btnReiniciar');
 
 const btnAtacar = document.getElementById('btnAtacar');
 const btnDefender = document.getElementById('btnDefender');
@@ -25,8 +26,12 @@ socket.on('registrado', (jogador) => {
   painelEntrada.style.display = 'none';
   painelJogo.style.display = 'block';
 });
+socket.on('mostrarBotaoReiniciar', () => {
+  btnReiniciar.style.display = 'inline-block';
+});
 
 socket.on('estadoAtual', (estado) => {
+  btnReiniciar.style.display = 'none';
   jogador1Span.textContent = `${estado.j1.nome} - Vida: ${estado.j1.vida}`;
   jogador2Span.textContent = `${estado.j2.nome} - Vida: ${estado.j2.vida}`;
   adicionarLog(estado.mensagem);
@@ -52,6 +57,7 @@ socket.on('erro', (msg) => {
   alert(msg);
 });
 
+
 function habilitarBotoes(ativo) {
   btnAtacar.disabled = !ativo;
   btnDefender.disabled = !ativo;
@@ -68,3 +74,4 @@ function adicionarLog(texto) {
 btnAtacar.onclick = () => socket.emit('acaoDoJogador', { tipo: 'atacar' });
 btnDefender.onclick = () => socket.emit('acaoDoJogador', { tipo: 'defender' });
 btnHabilidade.onclick = () => socket.emit('acaoDoJogador', { tipo: 'habilidade' });
+btnReiniciar.onclick = () => {socket.emit('reiniciarPartida'); btnReiniciar.style.display = 'none';};
