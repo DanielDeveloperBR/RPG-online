@@ -53,6 +53,9 @@
         font-size: 0.8em;
         height: 120px;
     }
+    footer{
+        position: inherit;
+    }
 }
 
 @media (max-width: 480px) {
@@ -81,4 +84,5 @@
     .info {
         font-size: 0.9em;
     }
+   
 }
