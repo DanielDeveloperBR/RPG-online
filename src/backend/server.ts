@@ -3,8 +3,14 @@ import http from 'http';
 import cors from 'cors';
 import { Server, Socket } from 'socket.io';
 import path from 'path';
+import helmet from 'helmet';
+import dotenv from 'dotenv'
+dotenv.config()
+
+
 
 const app = express();
+app.use(helmet())
 app.use(express.static(path.join(__dirname, '../../public')));
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -13,6 +19,10 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
+
+app.get("/ping", (req,res)=>{
+  res.send('pong')
+})
 
 interface Jogador {
   id: number;
