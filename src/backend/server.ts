@@ -1,11 +1,10 @@
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import path from 'path';
 import helmet from 'helmet';
 import dotenv from 'dotenv'
-import { console } from 'inspector';
 dotenv.config()
 
 const app = express();
@@ -18,8 +17,8 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-
-app.get("/ping", (req, res) => {
+app.use(cors());
+app.get("/ping", (req: any, res: any) => {
   res.send('pong')
 })
 
