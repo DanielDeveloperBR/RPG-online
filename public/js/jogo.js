@@ -11,6 +11,7 @@ const jogador2Span = document.getElementById('jogador2');
 const statusTurno = document.getElementById('statusTurno');
 const log = document.getElementById('log');
 const btnReiniciar = document.getElementById('btnReiniciar');
+const mensagemAguardar = document.getElementById('msgAguardar')
 
 const btnAtacar = document.getElementById('btnAtacar');
 const btnDefender = document.getElementById('btnDefender');
@@ -31,6 +32,7 @@ socket.on('mostrarBotaoReiniciar', () => {
 });
 
 socket.on('estadoAtual', (estado) => {
+  mensagemAguardar.textContent = '';
   btnReiniciar.style.display = 'none';
   jogador1Span.textContent = `${estado.j1.nome} - Vida: ${estado.j1.vida}`;
   jogador2Span.textContent = `${estado.j2.nome} - Vida: ${estado.j2.vida}`;
@@ -70,8 +72,20 @@ function adicionarLog(texto) {
   log.appendChild(p);
   log.scrollTop = log.scrollHeight;
 }
+socket.on('aguardando', (msg) => {
+  mensagemAguardar.textContent = msg;
+});
+
+socket.on('resetarParaEntrada', () => {
+  painelJogo.style.display = 'none';
+  painelEntrada.style.display = 'block';
+  nomeInput.value = '';
+  log.innerHTML = '';
+  statusTurno.textContent = '';
+  mensagemAguardar.textContent = ''
+});
 
 btnAtacar.onclick = () => socket.emit('acaoDoJogador', { tipo: 'atacar' });
 btnDefender.onclick = () => socket.emit('acaoDoJogador', { tipo: 'defender' });
 btnHabilidade.onclick = () => socket.emit('acaoDoJogador', { tipo: 'habilidade' });
-btnReiniciar.onclick = () => {socket.emit('reiniciarPartida'); btnReiniciar.style.display = 'none';};
+btnReiniciar.onclick = () => { socket.emit('reiniciarPartida'); btnReiniciar.style.display = 'none'; };
