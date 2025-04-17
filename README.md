@@ -18,7 +18,7 @@ Este é um jogo multiplayer de RPG de turnos online, desenvolvido com Node.js, E
 
 - 🔁 Reinício automático da partida
 
-- 💬 Mensagens em tempo real para ambos os jogadores <strong>(EM BREVE!)</strong>
+- 💬 Mensagens em tempo real para ambos os jogadores <strong style="color: red;">(EM BREVE!)</strong>
 
 - 🧠 Reset automático após desconexão de um jogador
 
@@ -97,7 +97,10 @@ http://localhost:3000
 ## Imagens 📷
 <h3>Tela inicial<h3>
 <img src="public/assets/telaInicial.png" alt="Tela do jogo" style="border-radius: 20px" width="500"/> 
-<br>
+<br></br>
+
+---
+
 <h3>Um jogador aguardando<h3>
 <img src="public/assets/jogadorAguardando.png" alt="Tela do jogo" width="500"/> 
 
@@ -111,10 +114,24 @@ http://localhost:3000
 
 - O frontend é responsivo e tem elementos visuais animados.
 
-## 🧙 Autor
+---
+
+# 📄 Licença
+
+Este projeto está licenciado sob a MIT License.
+Sinta-se livre para usar, modificar e compartilhar. ⚖️
+
+---
+
+## ⭐ Quer contribuir?
+
+Pull requests são muito bem-vindos!
+Abra uma issue, sugira melhorias ou colabore com novas ideias. Vamos crescer juntos! 🚀
+
+### 🧙 Autor
 
 <p>Desenvolvido com por <strong><a href="https://danielondeveloper.vercel.app/" target="_blank">Daniel S.</a></strong> 💻</p>
 
-## Contato
+### Contato
 
 Fique à vontade para entrar em contato comigo por meio do meu [e-mail](mailto:danieldetrabalho1@gmail.com) ou visite meu perfil no [GitHub](https://github.com/DanielDeveloperBR).
