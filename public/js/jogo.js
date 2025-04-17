@@ -1,4 +1,5 @@
-const socket = io();
+const socket = io()
+
 let meuId = '';
 let nome = '';
 
@@ -17,18 +18,26 @@ const btnAtacar = document.getElementById('btnAtacar');
 const btnDefender = document.getElementById('btnDefender');
 const btnHabilidade = document.getElementById('btnHabilidade');
 
+const botoes = document.querySelector('.btns')
+
 entrarBtn.onclick = () => {
+
   nome = nomeInput.value.trim();
   if (nome !== '') socket.emit('registrarJogador', nome);
 };
 
 socket.on('registrado', (jogador) => {
+  botoes.style.display = 'none'
+  console.log('Registrado com sucesso:', jogador);
   meuId = jogador.socketId;
   painelEntrada.style.display = 'none';
   painelJogo.style.display = 'block';
 });
 socket.on('mostrarBotaoReiniciar', () => {
   btnReiniciar.style.display = 'inline-block';
+});
+socket.on('erro', (msg) => {
+  console.log('Erro:', msg);
 });
 
 socket.on('estadoAtual', (estado) => {
@@ -42,6 +51,7 @@ socket.on('estadoAtual', (estado) => {
     statusTurno.textContent = '🏁 Fim de jogo!';
     habilitarBotoes(false);
   } else if (estado.turno === meuId) {
+    botoes.style.display = 'flex'
     statusTurno.textContent = 'É sua vez!';
     habilitarBotoes(true);
   } else {
