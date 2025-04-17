@@ -9,10 +9,12 @@ import compression from 'compression';
 dotenv.config();
 
 const app = express();
-app.use(helmet())
-app.use(compression())
+app.use(helmet());
+app.use(compression());
+app.use(express.json()); 
 app.use(express.static(path.join(__dirname, '../../public')));
 
+// CORS com origem controlada
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(','),
   methods: ['GET', 'POST'],
