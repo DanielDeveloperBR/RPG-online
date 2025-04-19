@@ -36,6 +36,8 @@ socket.on('registrado', (jogador) => {
   meuId = jogador.socketId;
   painelEntrada.style.display = 'none';
   painelJogo.style.display = 'block';
+  document.querySelector('.vs').style.animation = 'pulseSpin 1.6s ease-in-out infinite alternate';
+
 });
 socket.on('mostrarBotaoReiniciar', () => {
   btnReiniciar.style.display = 'inline-block';
@@ -46,6 +48,7 @@ socket.on('erro', (msg) => {
 let atributos
 socket.on('estadoAtual', (estado) => {
   document.getElementById('contador').style.display = 'block'
+  document.querySelector('.vs').style.animation = 'pulse 1s linear infinite';
   mensagemAguardar.textContent = '';
   btnReiniciar.style.display = 'none';
   jogador1Span.innerHTML = `<div>Nome: <strong style="color: blue;">${estado.j1.nome}</strong><p>Vida: ${estado.j1.vida}</p>Energia: ${estado.j1.classe.energia}</div>`;
