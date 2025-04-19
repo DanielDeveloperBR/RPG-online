@@ -1,8 +1,9 @@
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background: radial-gradient(#111, #000);
@@ -12,11 +13,13 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-.container{
+
+.container {
   display: flex;
   align-content: center;
   justify-content: space-evenly;
 }
+
 h1 {
   margin-top: 30px;
   font-size: 2.5em;
@@ -60,6 +63,13 @@ button {
 button:hover:not(:disabled) {
   background: #00c853;
   transform: scale(1.05);
+  cursor: pointer;
+}
+#btnAtacar:disabled, #btnHabilidade:disabled, #btnDefender:disabled{
+  background: #444;
+  cursor: not-allowed;
+  box-shadow: none;
+  color: none;
 }
 
 button:disabled {
@@ -82,7 +92,7 @@ button:disabled {
 
 .vs {
   font-size: 2em;
-  animation: pulse 1s infinite;
+  animation: pulseSpin 1.6s ease-in-out infinite alternate;
 }
 
 .sprite {
@@ -109,14 +119,17 @@ button:disabled {
   font-size: 0.9em;
   border: 1px solid #00e676;
 }
+
 #statusTurno {
   text-align: center;
 }
-#btnReiniciar{
+
+#btnReiniciar {
   margin-top: 20px auto;
-    max-width: 100%;
+  max-width: 100%;
 
 }
+
 #msgAguardar {
   max-width: 100%;
   margin: 10px auto;
@@ -124,7 +137,31 @@ button:disabled {
   font-size: 1.5rem;
   animation: pulse 1s infinite;
 }
-footer{
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 100;
+  pointer-events: none;
+  height: auto;
+  max-width: 100%;
+  margin: auto;
+  width: 200px;
+}
+.descricao{
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+  color: white;
+  background-color: #323f40bf;
+  box-shadow: 0px 0px 2px 1px white;
+  text-align: justify;
+}
+footer {
   position: absolute;
   bottom: 0%;
   text-align: center;
