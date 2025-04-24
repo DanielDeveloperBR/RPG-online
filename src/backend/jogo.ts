@@ -1,5 +1,6 @@
 import Jogador from "./jogador";
 import { EventEmitter } from 'events';
+
 class RPG extends EventEmitter {
   jogador1: Jogador;
   jogador2: Jogador;
@@ -34,32 +35,66 @@ class RPG extends EventEmitter {
   reiniciar(id: string): void {
     const jogador = this.getJogador(id)
     const oponente = this.getOponente(id)
-    jogador.vida = 100
+    jogador.setBloqueado(false)
+    oponente.setBloqueado(false)
+    jogador.efeitoTime = 2
+    oponente.efeitoTime = 2
+    oponente.setEfeito(true)
+    jogador.setEfeito(true)
+    jogador.vida = 200
+    oponente.vida = 200
     jogador.reiniciarEnergia()
     oponente.reiniciarEnergia()
-    oponente.vida = 100
     this.turno = id
     this.removerContador()
     this.reiniciarContador()
   }
 
-  aplicarAcao(socketId: string, acao: string): string {
+  aplicarAcao(socketId: string, acao: string) {
     if (socketId !== this.turno) return 'Não é sua vez!';
-    if (this.jaAgiu[socketId]) {
-      this.acoesPendentes[socketId] = acao;
-      return `Ação alterada para: ${acao}. Agora pule o turno para executar.`;
+    const jogador = this.getJogador(socketId);
+    // if (this.acoesPendentes[socketId]) {
+    //   return 'Você já escolheu uma ação neste turno!';
+    // }
+    if (jogador.estaBloqueado()) {
+      return 'Você está atordoado e não pode agir neste turno!';
     }
-
-
     this.acoesPendentes[socketId] = acao;
     this.jaAgiu[socketId] = true;
 
     return `Ação escolhida: ${acao}. Agora pule o turno para executar.`;
+
   }
 
   pularTurno(id: string) {
     const vencedor = this.verificarVitoria();
     if (vencedor) return false;
+    const atacante = this.getJogador(id);
+    if (atacante.estaBloqueado() === true) {
+      atacante.setBloqueado(false)
+
+      // limpa ação e evita qualquer execução forçada via console
+      delete this.acoesPendentes[id];
+      this.jaAgiu[id] = false;
+
+      // muda o turno normalmente
+      this.turno = this.getOponente(id).socketId;
+      this.getOponente(id).setEnergia(10); // benefício de turno passado
+      this.iniciarTurno();
+
+      return `${atacante.nome} está atordoado e perdeu o turno!`;
+    }
+    // if (!this.acoesPendentes[id]) {
+    //   return 'Você não tem nenhuma ação registrada para este turno!';
+    // }
+    
+    const acao = this.acoesPendentes[id];
+    // if (acao === null || acao === undefined) {
+    //   this.turno = this.getOponente(id).socketId;
+    //   this.getOponente(id).setEnergia(20);
+    //   return `${this.getJogador(id).nome} pulou o turno.`;
+    // }
+  
     if (!this.jaAgiu[id]) {
       this.turno = this.getOponente(id).socketId;
       this.getOponente(id).setEnergia(20);
@@ -67,61 +102,157 @@ class RPG extends EventEmitter {
       return `${this.getJogador(id).nome} não fez nada. Turno perdido.`;
     }
 
+    if (atacante.efeitoTime === 2) {
+      atacante.setEfeito(true)
+    }
 
-    const acao = this.acoesPendentes[id];
-    const atacante = this.getJogador(id);
     const defensor = this.getOponente(id);
     let mensagem = '';
 
     if (acao === 'atacar' && atacante.getEnergia() >= 30) {
-      const dano = atacante.atacar()
+      let dano = atacante.atacar()
+      if (defensor.estaDefendendo()) {
+        const fatorRandomico = Math.random() * 100; // valor entre 0 e 100
+
+        let porcentagemReducao = (defensor.getDefesa() + fatorRandomico) / 2; // média da defesa com o valor aleatório
+        if (porcentagemReducao > 100) porcentagemReducao = 100;
+
+        const danoReduzido = dano * (1 - porcentagemReducao / 100);
+        dano = Math.floor(Math.max(0, danoReduzido))
+
+        defensor.limparDefesa();
+      }
       defensor.vida -= dano;
       atacante.setEnergia(-30);
       mensagem = `${atacante.nome} atacou causando ${dano} de dano!`;
     } else if (acao === 'defender' && atacante.getEnergia() >= 20) {
-      atacante.getDefesa();
+      atacante.defesaAtiva()
       atacante.setEnergia(-20);
       mensagem = `${atacante.nome} está se defendendo.`;
     } else if (acao === 'habilidade' && atacante.getEnergia() > 50) {
       if (atacante.getEfeito() === true) {
         atacante.setEnergia(-50);
-        defensor.vida -= atacante.getHabilidade();
-        atacante.setEfeito(false);
-        mensagem = `${atacante.nome} usou a habilidade: ${atacante.getDescricao()} causando ${atacante.getHabilidade()} de dano!`;
+        atacante.efeitoTime = 0
+        atacante.setEfeito(false)
+
+        const classe = atacante.classe.nome;
+        switch (classe) {
+          case 'barbaro':
+            if (defensor.estaDefendendo() === true) {
+              mensagem = `${defensor.nome} defendeu a habilidade!`;
+              break
+            }
+            defensor.setBloqueado(true);
+            defensor.vida -= atacante.classe.habilidade;
+            mensagem = `${atacante.nome} usou Fúria: causou ${atacante.classe.habilidade} de dano e paralisou o inimigo!`;
+            break;
+
+          case 'mago':
+            // Ignora defesa
+            const danoMago = atacante.classe.habilidade;
+            defensor.vida -= danoMago;
+            mensagem = `${atacante.nome} lançou Bola de Fogo: causou ${danoMago} de dano ignorando a defesa!`;
+            break;
+
+          case 'arqueiro':
+            // Ignora defesa e chance de crítico
+            let danoArqueiro = atacante.classe.habilidade;
+            const critico = Math.random() < 0.3; // 30% chance de crítico
+            if (critico) {
+              danoArqueiro *= 2;
+              mensagem = `${atacante.nome} fez um Tiro Certeiro CRÍTICO! Causou ${danoArqueiro} de dano ignorando defesa!`;
+            } else {
+              mensagem = `${atacante.nome} fez um Tiro Certeiro: causou ${danoArqueiro} de dano ignorando defesa!`;
+            }
+            defensor.vida -= danoArqueiro;
+            danoArqueiro = 50
+            break;
+
+          default:
+            mensagem = `${atacante.nome} tentou usar uma habilidade desconhecida.`;
+        }
+
+        this.emit('efeitoAtualizado', {
+          [atacante.socketId]: atacante.getEfeito()
+        });
+
+
       }
     } else {
-      mensagem = `Ação inválida ou energia insuficiente.`;
+        // Impede a troca de turno se a energia for insuficiente
+        this.emit('energiaInsuficiente', {
+          jogadorId: atacante.socketId,
+        energiaAtual: atacante.getEnergia(),
+        acao: this.acoesPendentes[id]
+
+      });
+      this.jaAgiu[id] = false;
+      delete this.acoesPendentes[id];
+      
+      return `Energia insuficiente para realizar a ação.`;
     }
 
     this.turno = defensor.socketId;
-    defensor.setEnergia(20);
     this.jaAgiu[id] = false;
     delete this.acoesPendentes[id];
+
+    atacante.efeitoTime++
+    defensor.setEnergia(10);
     this.iniciarTurno();
 
     return mensagem;
   }
+
   removerContador(): void {
     clearInterval(this.temporizador);
     this.temporizador = undefined;
     this.tempoRestante = 60;
     this.jogoEncerrado = true;
-    this.removeAllListeners();
+  // const eventos = this.eventNames(); // Obtém todos os nomes de eventos registrados
+  // eventos.forEach(evento => {
+  //   if (evento !== 'efeitoAtualizado') {
+  //     this.removeAllListeners(evento); 
+  //   }
+  // })
+  // this.removeAllListeners();
   }
-  
 
   reiniciarContador(): void {
     this.tempoRestante = 60
     this.jogoEncerrado = false
     this.iniciarTurno()
   }
+
   iniciarTurno() {
     if (this.jogoEncerrado) return;
+    const jogador = this.getJogador(this.turno);
 
+    this.emit('estadoEnergia', {
+      jogadorId: jogador.socketId,
+      energiaAtual: jogador.getEnergia()
+    });
+
+    let mensagem = `${jogador.nome} estava atordoado e perdeu o turno!`;
+
+    // Se está atordoado 1 turno
+    if (jogador.estaBloqueado() === true) {
+      this.emit('jogadorAtordoado', {
+        jogadorId: jogador.socketId,
+        duracao: 1
+      });
+
+      this.emit('turnoPulado', {
+        jogadorId: jogador.socketId,
+        mensagem
+      });
+
+      return;
+    }
+
+    // Iniciar time
     if (this.temporizador) clearInterval(this.temporizador);
     this.tempoRestante = 60;
     this.emit('tempo', this.tempoRestante);
-
     this.temporizador = setInterval(() => {
       this.tempoRestante--;
       this.emit('tempo', this.tempoRestante);
@@ -130,11 +261,23 @@ class RPG extends EventEmitter {
         clearInterval(this.temporizador);
         this.temporizador = undefined;
 
-        if (this.jogoEncerrado) return; // <-- nova verificação
+        if (this.jogoEncerrado) return;
 
         const turnoAnterior = this.turno;
-        const mensagem = this.pularTurno(turnoAnterior);
-
+          mensagem = `${jogador.nome} não fez nada. Turno perdido por tempo.`;
+        
+        // const jogador = this.getJogador(turnoAnterior);
+        // if (!this.jaAgiu[turnoAnterior]) {
+        //   // Jogador perdeu o turno por inatividade
+        //   mensagem = `${jogador.nome} não fez nada. Turno perdido por tempo.`;
+        //   this.turno = this.getOponente(turnoAnterior).socketId;
+        //   this.getOponente(turnoAnterior).setEnergia(10);
+        //   this.jaAgiu[turnoAnterior] = false;
+        //   delete this.acoesPendentes[turnoAnterior];
+        // } else {
+        //   // Jogador agiu, mas não pulou voluntariamente (então chamamos pularTurno)
+        //   mensagem = this.pularTurno(turnoAnterior);
+        // }
         this.emit('turnoPulado', {
           jogadorId: turnoAnterior,
           mensagem
@@ -144,6 +287,7 @@ class RPG extends EventEmitter {
       }
     }, 1000);
   }
+
 }
 
 export { RPG }
