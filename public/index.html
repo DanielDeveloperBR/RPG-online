@@ -7,10 +7,12 @@
   <meta name="description"
     content="Jogo de RPG de turnos online, onde você ataca, defende e usa habilidades para derrotar o oponente. Começam com 100 de vidas e quem chegar a zero perde.">
   <title>Jogo de Turno RPG</title>
-  <link rel="shortcut icon" href="./assets/nerd.ico" type="image/x-icon">
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/responsivo.css">
-  <link rel="stylesheet" href="css/animacao.css">
+  <link rel="shortcut icon" href="/assets/nerd.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsivo.css">
+  <link rel="stylesheet" href="/css/animacao.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -23,10 +25,30 @@
       <input type="text" autocomplete="username" id="nome" placeholder="Digite seu nome..." />
       <button id="entrarBtn">Entrar</button>
     </div>
-
+    <h2>Escolha seu personagem</h2>
+    <div class="cards-container">
+      <div class="card-personagem">
+        <h3>🛡️ Bárbaro</h3>
+        <p>Fúria: Ataque alto, paralisa o inimigo por 1 turno.</p>
+        <img src="./assets/cards/barbaroCard.jpg" alt="Bárbaro card">
+        <button class="selecionar" data-classe="barbaro">Selecionar</button>
+      </div>
+      <div class="card-personagem">
+        <h3>🔥 Mago</h3>
+        <p>Bola de Fogo: Dano em área e ignora defesa.</p>
+        <img src="./assets/cards/magoCard.jpg" alt="Mago card">
+        <button class="selecionar" data-classe="mago">Selecionar</button>
+      </div>
+      <div class="card-personagem">
+        <h3>🏹 Arqueiro</h3>
+        <p>Tiro Certeiro: Ataque preciso, chance de crítico.</p>
+        <img src="./assets/cards/arqueiroCard.jpg" alt="Arqueiro card">
+        <button class="selecionar" data-classe="arqueiro">Selecionar</button>
+      </div>
+    </div>
 
   </div>
-
+ 
   <div class="painel" id="painelJogo" style="display: none;">
 
     <div class="arena">
@@ -44,9 +66,9 @@
     <h2 id="statusTurno"></h2>
 
     <div class="btns">
-      <button id="btnAtacar">⚔️ Atacar</button>
-      <button id="btnDefender">🛡️ Defender</button>
-      <button id="btnHabilidade">✨ Habilidade</button>
+      <button id="btnAtacar"  class="btnAcao" value="atacar">⚔️ Atacar</button>
+      <button id="btnDefender"  class="btnAcao" value="defender">🛡️ Defender</button>
+      <button id="btnHabilidade"  class="btnAcao" value="habilidade">✨ Habilidade</button>
       <button id="pularTurno">Pular jogada</button>
 
     </div>
@@ -60,7 +82,7 @@
 
   <footer>&copy; Desenvolvido por Daniel S.</footer>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="js/jogo.js"></script>
+  <script src="/js/jogo.js"></script>
 </body>
 
 </html>
