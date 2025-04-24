@@ -1,3 +1,4 @@
+
 const socket = io()
 
 let meuId = '';
@@ -19,15 +20,36 @@ const btnDefender = document.getElementById('btnDefender');
 const btnHabilidade = document.getElementById('btnHabilidade');
 const btnPularTurno = document.getElementById('pularTurno');
 
+let acaoSelecionada = null;
+
+
 const arena = document.querySelector('.arena')
 
 const botoes = document.querySelector('.btns')
 
-entrarBtn.onclick = () => {
+let classeEscolhida
+let atributos
 
+document.querySelectorAll('.selecionar').forEach(button => {
+  button.addEventListener('click', (e) => {
+    classeEscolhida = e.target.getAttribute('data-classe');
+  });
+});
+// Entrada e seleção de classe
+entrarBtn.addEventListener('click', (e) => {
+  e.preventDefault()
+  const classe = classeEscolhida
   nome = nomeInput.value.trim();
-  if (nome !== '') socket.emit('registrarJogador', nome);
-};
+  if (nome !== '') socket.emit('registrarJogador', nome, classe);
+})
+
+socket.on('reinciarPartida', () => {
+  resetarBotes()
+})
+
+socket.on('mostrarBotaoReiniciar', () => {
+  btnReiniciar.style.display = 'inline-block';
+});
 
 socket.on('registrado', (jogador) => {
   jogador1Span.style.display = 'none'
@@ -37,45 +59,78 @@ socket.on('registrado', (jogador) => {
   painelEntrada.style.display = 'none';
   painelJogo.style.display = 'block';
   document.querySelector('.vs').style.animation = 'pulseSpin 1.6s ease-in-out infinite alternate';
+  resetarBotes()
+});
 
-});
-socket.on('mostrarBotaoReiniciar', () => {
-  btnReiniciar.style.display = 'inline-block';
-});
 socket.on('erro', (msg) => {
-  console.log('Erro:', msg);
+  alert('Erro:', msg);
 });
-let atributos
+
+socket.on('turnoPulado', ({ mensagem }) => {
+  adicionarLog(mensagem);
+});
+
 socket.on('estadoAtual', (estado) => {
-  document.getElementById('contador').style.display = 'block'
+
+  const meuJogador = estado.j1.socketId === meuId ? estado.j1 : estado.j2;
+  btnHabilidade.style.animation = 'none'
+  if (meuJogador.classe.efeito === true) {
+    btnHabilidade.style.animation = 'habilidadePronta 600ms linear infinite'
+  }
+  adicionarLog(estado.mensagem)
+
   document.querySelector('.vs').style.animation = 'pulse 1s linear infinite';
+  document.getElementById('contador').style.display = 'block'
   mensagemAguardar.textContent = '';
   btnReiniciar.style.display = 'none';
-  jogador1Span.innerHTML = `<div>Nome: <strong style="color: blue;">${estado.j1.nome}</strong><p>Vida: ${estado.j1.vida}</p>Energia: ${estado.j1.classe.energia}</div>`;
-  jogador2Span.innerHTML = `<div>Nome: <strong style="color: red;">${estado.j2.nome}</strong><p>Vida: ${estado.j2.vida}</p><p>Energia: ${estado.j2.classe.energia}</p></div>`;
-  console.log(estado.j1.classe)
-  atributos = estado.j1.classe
+  jogador1Span.style.display = 'block'
+  jogador2Span.style.display = 'block'
+  jogador1Span.innerHTML = `<div><strong style="color: blue;">${estado.j1.nome}</strong><img class="classe-icon" src="./assets/avatar/${estado.j1.classe.nome}Avatar.png"><p>Vida: ${estado.j1.vida}</p>Energia: ${estado.j1.classe.energia}</div>`;
+  jogador2Span.innerHTML = `<div><img class="classe-icon" src="./assets/avatar/${estado.j2.classe.nome}Avatar.png"><strong style="color: red;">${estado.j2.nome}</strong><p>Vida: ${estado.j2.vida}</p><p>Energia: ${estado.j2.classe.energia}</p></div>`;
 
+  atributos = estado.j1.socketId === meuId ? estado.j1.classe : estado.j2.classe;
 
-  if (estado.turno === null) {
+  if (estado.turno === null) { //Acabou o jogo
     botoes.style.display = 'none'
+
     document.getElementById('contador').style.display = 'none';
     statusTurno.textContent = '🏁 Fim de jogo!';
     return
   } else if (estado.turno === meuId) {
-    jogador1Span.style.display = 'flex'
-    jogador2Span.style.display = 'flex'
-    botoes.style.display = 'flex'
-    statusTurno.textContent = 'É sua vez!';
-    adicionarLog(estado.mensagem);
-  } else {
-    botoes.style.display = 'none'
-    resetarBotes()
-    jogador1Span.style.display = 'none'
-    jogador2Span.style.display = 'none'
-    statusTurno.textContent = 'Aguarde o oponente...';
-    adicionarLog(estado.mensagem);
+    if (meuJogador.classe.efeito === false) {
+      btnHabilidade.classList.add('active')
+      btnHabilidade.disabled = true
+    }
 
+    jogador1Span.style.display = 'block'
+    jogador2Span.style.display = 'block'
+    botoes.style.display = 'flex'
+    statusTurno.textContent = `${meuJogador.nome} é a sua vez!`;
+
+  } else {
+    resetarBotes()
+    acaoSelecionada = null
+    botoes.style.display = 'none'
+    statusTurno.textContent = 'Aguarde o oponente...';
+  }
+});
+
+socket.on('estadoEnergia', ({ jogadorId, energiaAtual }) => {
+  if (jogadorId === meuId){
+    btnAtacar.disabled = energiaAtual < 30;
+    btnDefender.disabled = energiaAtual < 20;
+    btnHabilidade.disabled = energiaAtual <= 50;
+  }
+});
+
+socket.on('energiaInsuficiente', ({ acao }) => {
+  adicionarLog(`⚠️ Energia insuficiente para usar: ${acao.toUpperCase()}`);
+});
+
+socket.on('estadoHabilidade', (habilidadeDisponivel) => {
+  if (btnHabilidade) {
+    btnHabilidade.disabled = habilidadeDisponivel;
+    btnHabilidade.classList.remove('active')
   }
 });
 
@@ -83,13 +138,25 @@ socket.on('tempo', (contagem) => {
   document.getElementById('contador').textContent = `⏳ Tempo restante: ${contagem}s`;
 });
 
-socket.on('turnoPulado', (msg) => {
-  adicionarLog(msg)
-})
+socket.on('jogadorAtordoado', () => {
+  btnAtacar.disabled = true
+  btnDefender.disabled = true
+  btnHabilidade.disabled = true
+});
 
 socket.on('mensagem', (msg) => {
   adicionarLog(msg);
 });
+
+function resetarBotes() {
+  const botoesAcoes = [btnAtacar, btnDefender, btnHabilidade];
+  botoesAcoes.forEach((btn) => {
+    if (btn.classList.contains('active')){
+      btn.disabled = false;
+      btn.classList.remove('active')
+    }
+  });
+}
 
 function adicionarLog(texto) {
   const p = document.createElement('p');
@@ -100,19 +167,28 @@ function adicionarLog(texto) {
 socket.on('aguardando', (msg) => {
   mensagemAguardar.textContent = msg;
 });
+
 function desativarOutrosBotoes(botaoClicado) {
   const botoesAcoes = [btnAtacar, btnDefender, btnHabilidade];
 
-  botoesAcoes.forEach((btn) => {
-    btn.disabled = (btn === botaoClicado);
-  });
-}
-function resetarBotes() {
-  const botoesAcoes = [btnAtacar, btnDefender, btnHabilidade];
+  return botoesAcoes.find((botao) => botao === botaoClicado ? acaoSelecionada = botao.id : acaoSelecionada = null)
 
-  botoesAcoes.forEach((btn) => {
-    btn.disabled = false
-  });
+}
+
+function selecionarBotoes(botaoClicado) {
+  const botoesAcoes = [btnAtacar, btnDefender, btnHabilidade];
+  const jaEstavaAtivo = botaoClicado.classList.contains('active');
+
+  botoesAcoes.forEach(btn => btn.classList.remove('active'));
+
+  if (!jaEstavaAtivo) {
+    botaoClicado.classList.add('active');
+    acaoSelecionada = botaoClicado.value
+  } else {
+    acaoSelecionada = null; // Desmarcou
+  }
+
+  return !jaEstavaAtivo;
 }
 
 socket.on('resetarParaEntrada', () => {
@@ -123,8 +199,10 @@ socket.on('resetarParaEntrada', () => {
   statusTurno.textContent = '';
   mensagemAguardar.textContent = ''
   document.getElementById('contador').style.display = 'none'
+  btnHabilidade.disabled = false
+  btnAtacar.disabled = false
+  btnDefender.disabled = false
 });
-
 
 function mostrarTooltip(texto, event, botao) {
   tooltip.innerHTML = texto.replace(/\n/g, '<br>');
@@ -167,7 +245,6 @@ function mostrarTooltip(texto, event, botao) {
   });
 }
 
-
 function esconderTooltip() {
   tooltip.style.display = 'none';
 }
@@ -185,7 +262,6 @@ function configurarTooltip(botao, textoFunc) {
   });
 }
 
-
 configurarTooltip(btnAtacar, () =>
   `<div><p>Ataque: <strong style="color: blue;">${atributos.ataque} ~ ${atributos.ataque + 15}</strong></p><p>Após usar: <strong style="color: red;">${atributos.energia - 30}</strong></p></div>`
 );
@@ -198,25 +274,34 @@ configurarTooltip(btnHabilidade, () =>
   `<div><p>Dano: <strong style="color: blue;">${atributos.habilidade}</strong></p><p>Após usar: <strong style="color: red;">${atributos.energia - 50}</strong></p><p class="descricao">Descrição: ${atributos.descricao}</p></div>`
 );
 
-
 btnAtacar.addEventListener('click', () => {
-
-  desativarOutrosBotoes(btnAtacar)
-  socket.emit('acaoDoJogador', { tipo: 'atacar' });
+  selecionarBotoes(btnAtacar)
+  // if (botao) socket.emit('acaoDoJogador', { tipo: 'atacar' });
 });
 
 btnDefender.addEventListener('click', () => {
-  desativarOutrosBotoes(btnDefender)
-
-  socket.emit('acaoDoJogador', { tipo: 'defender' });
+  selecionarBotoes(btnDefender)
+  // if (botao) socket.emit('acaoDoJogador', { tipo: 'defender' });
 });
 
 btnHabilidade.addEventListener('click', () => {
-  desativarOutrosBotoes(btnHabilidade)
-  socket.emit('acaoDoJogador', { tipo: 'habilidade' });
-});
+  selecionarBotoes(btnHabilidade)
+  // if (botao) socket.emit('acaoDoJogador', { tipo: 'habilidade' });
+})
 
 btnPularTurno.addEventListener('click', () => {
+  if (acaoSelecionada) {
+    socket.emit('acaoDoJogador', { tipo: acaoSelecionada })
+    return socket.emit('pularTurno');
+  }
   socket.emit('pularTurno');
+
 });
-btnReiniciar.onclick = () => { socket.emit('reiniciarPartida'); btnReiniciar.style.display = 'none'; };
+
+btnReiniciar.addEventListener('click', () => {
+  socket.emit('reiniciarPartida');
+  btnReiniciar.style.display = 'none';
+  btnHabilidade.disabled = false
+  btnAtacar.disabled = false
+  btnDefender.disabled = false
+})
