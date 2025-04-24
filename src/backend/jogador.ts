@@ -5,6 +5,7 @@ class Jogador extends Classes {
   socketId: string;
   nome: string;
   vida: number;
+  bloqueado: boolean = false; 
 
   constructor(id: number, socketId: string, nome: string, vida: number, classeData: any) {
     super(classeData); 
@@ -12,6 +13,13 @@ class Jogador extends Classes {
     this.socketId = socketId;
     this.nome = nome;
     this.vida = vida;
+  }
+  setBloqueado(valor: boolean): void {
+    this.bloqueado = valor;
+  }
+
+  estaBloqueado(): boolean {
+    return this.bloqueado;
   }
   }
   

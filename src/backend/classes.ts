@@ -11,11 +11,13 @@ interface classe {
 class Classes {
     classe: classe
     energia: number
-
+    efeitoTime: number = 2
+    defender = false
+    maxEnergia: number
     constructor(jogador: classe) {
         this.classe = jogador
         this.energia = jogador.energia
-
+        this.maxEnergia = this.classe.energia
     }
 
     getNome(): string {
@@ -25,10 +27,14 @@ class Classes {
     getEnergia(): number {
         return this.classe.energia
     }
-    setEnergia(energia: number): number {
-        this.classe.energia += energia
+    setEnergia(novaEnergia: number): number {
+        this.classe.energia += novaEnergia;
+    
+        if (this.classe.energia > this.maxEnergia) {
+            this.classe.energia = this.maxEnergia;
+        } 
         return this.classe.energia;
-      }
+    }
 
     getEfeito(): boolean {
         return this.classe.efeito
@@ -49,6 +55,16 @@ class Classes {
       }
     getAtaque():number{
         return this.classe.ataque
+    }
+
+    defesaAtiva(){
+        return this.defender = true
+    }
+    limparDefesa(){
+        return this.defender = false
+    }
+    estaDefendendo(): boolean{
+        return this.defender
     }
     getDefesa():number{
         return this.classe.defesa
