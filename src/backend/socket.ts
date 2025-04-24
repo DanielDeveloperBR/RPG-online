@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
-import Jogador from "./jogador";
-import { RPG } from "./jogo";
 import server from './server';
 import Classes from './classes';
+import Jogador from "./jogador";
+import { RPG } from "./jogo";
 
 const io = new Server(server, {
   cors: {
@@ -19,17 +19,19 @@ let salas: {
   };
 } = {};
 
-
-const barbaro = Classes.criarClasse("Bárbaro", 80, 10, 20, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno. 70 de energia.',)
-const mago = Classes.criarClasse("Bárbaro", 80, 30, 20, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno. 70 de energia.',)
-const arqueiro = Classes.criarClasse("Bárbaro", 80, 30, 20, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno. 70 de energia.',)
+const barbaro = Classes.criarClasse("barbaro", 80, 20, 50, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno.',)
+const mago = Classes.criarClasse("mago", 100, 10, 80, 60, 'Bola de Fogo: Dano em área e ignora defesa.',)
+const arqueiro = Classes.criarClasse("arqueiro", 90, 15, 40, 50, 'Tiro Certeiro: Ataque preciso, chance de crítico e ignora defesa.',)
 
 io.on('connection', (socket) => {
-  console.log('Novo jogador conectado:', socket.id);
-  socket.on('registrarJogador', (nome: string) => {
-    console.log("usuario: " + nome)
-    if (typeof nome !== 'string' || nome.trim().length === 0) {
-      socket.emit('erro', 'Nome inválido.');
+
+  // console.log('Novo jogador conectado:', socket.id);
+
+  // Registrar jogador
+  socket.on('registrarJogador', (nome: string, classe: string) => {
+
+    if (typeof nome !== 'string' || nome.trim().length === 0 || typeof classe !== 'string') {
+      socket.emit('erro', 'Nome ou classe inválidos.');
       return;
     }
 
@@ -41,11 +43,11 @@ io.on('connection', (socket) => {
           delete sala.jogadores[id];
         }
       }
-    
+
       return sala.status === 'esperando' && Object.keys(sala.jogadores).length < 2;
     });
-    
 
+    // Esperando quando não encontrar uma sala
     if (!salaEncontrada) {
       const novaSala = `sala-${socket.id}`;
       salas[novaSala] = {
@@ -54,7 +56,7 @@ io.on('connection', (socket) => {
         intervaloReset: null,
         status: 'esperando'
       };
-      
+
       salaEncontrada = [novaSala, salas[novaSala]];
     }
 
@@ -62,29 +64,49 @@ io.on('connection', (socket) => {
     socket.join(nomeSala);
 
     const id = Object.keys(sala.jogadores).length + 1;
+    let classeEscolhida;
 
-    const classeEscolhida = Classes.criarClasse(
-      barbaro.nome,
-      barbaro.energia,
-      barbaro.ataque,
-      barbaro.defesa,
-      barbaro.habilidade,
-      barbaro.descricao
-    );
-    const novoJogador = new Jogador(id, socket.id, nome, 100, classeEscolhida);
+    switch (classe) {
+      case 'barbaro':
+        classeEscolhida = Classes.criarClasse("barbaro", 80, 20, 50, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno.')
+        break;
+      case 'mago':
+        classeEscolhida = Classes.criarClasse("mago", 100, 10, 80, 60, 'Bola de Fogo: Dano em área e ignora defesa.')
+        break;
+      case 'arqueiro':
+        classeEscolhida = Classes.criarClasse("arqueiro", 90, 15, 40, 50, 'Tiro Certeiro: Ataque preciso, chance de crítico e ignora defesa.')
+        break;
+      default:
+        socket.emit('erro', 'Classe inválida.');
+        return;
+    }
+
+    const novoJogador = new Jogador(id, socket.id, nome, 200, classeEscolhida)
 
     sala.jogadores[socket.id] = novoJogador;
 
     socket.emit('registrado', novoJogador);
     socket.emit('aguardando', 'Aguardando outro jogador entrar...');
-    
-    
+
+
     if (Object.keys(sala.jogadores).length === 2) {
       sala.status = 'emJogo';
       const [j1, j2] = Object.values(sala.jogadores);
       sala.jogo = new RPG(j1, j2);
+      sala.jogo.iniciarTurno();
 
-      // Início do jogo
+      //  Verificar energia
+      sala.jogo.on('estadoEnergia', ({ jogadorId, energiaAtual }) => {
+        io.to(jogadorId).emit('estadoEnergia', {jogadorId, energiaAtual});
+      });
+
+      // Quando usa a habilidade
+      sala.jogo.on('efeitoAtualizado', (dados) => {
+        for (const [id, efeito] of Object.entries(dados)) {
+          io.to(id).emit('estadoHabilidade', efeito);
+        }
+      });
+
       io.to(nomeSala).emit('estadoAtual', {
         j1,
         j2,
@@ -92,8 +114,8 @@ io.on('connection', (socket) => {
         mensagem: 'Jogo iniciado!'
       });
 
-      sala.jogo.iniciarTurno();
 
+      // Contador
       sala.jogo.on('tempo', (contagem) => {
         io.to(nomeSala).emit('tempo', contagem);
       });
@@ -106,9 +128,13 @@ io.on('connection', (socket) => {
           mensagem,
           trocarTurno: true
         });
-      });
-    }
+      })
+      sala.jogo.on('jogadorAtordoado', ({ jogadorId }) => {
 
+        io.to(jogadorId).emit('jogadorAtordoado');
+      });
+
+    }
 
   });
 
@@ -120,7 +146,10 @@ io.on('connection', (socket) => {
 
     const [nomeSala, sala] = salaDoJogador;
     const jogo = sala.jogo;
-    if (!jogo) return;
+    const jogador = sala?.jogadores[socket.id];
+    if (!jogo || !jogador) return;
+
+
     const mensagem = jogo.aplicarAcao(socket.id, tipo);
 
     const vencedor = jogo.verificarVitoria();
@@ -136,33 +165,8 @@ io.on('connection', (socket) => {
       io.to(nomeSala).emit('mostrarBotaoReiniciar');
       return;
     }
-
-    io.to(nomeSala).emit('estadoAtual', {
-      j1: jogo.jogador1,
-      j2: jogo.jogador2,
-      turno: jogo.turno,
-      mensagem
-    });
-
+    socket.emit('mensagem', `🔒 ${mensagem}`);
   });
-
-  socket.on('turnoPulado', () => {
-    const salaDoJogador = Object.entries(salas).find(([_, sala]) => sala.jogadores[socket.id]);
-    if (!salaDoJogador) return;
-
-    const [nomeSala, sala] = salaDoJogador;
-    const jogo = sala.jogo;
-    if (!jogo) return;
-    const mensagem = jogo.pularTurno(socket.id);
-    io.to(nomeSala).emit('estadoAtual', {
-      j1: jogo.jogador1,
-      j2: jogo.jogador2,
-      turno: jogo.turno,
-      mensagem,
-      trocarTurno: true
-    });
-  })
-
 
   socket.on('pularTurno', () => {
     const salaDoJogador = Object.entries(salas).find(([_, sala]) => sala.jogadores[socket.id]);
@@ -196,6 +200,23 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Acabou o tempo aí tem que pular o turno ou quando está atordoado
+  socket.on('turnoPulado', () => {
+    const salaDoJogador = Object.entries(salas).find(([_, sala]) => sala.jogadores[socket.id]);
+    if (!salaDoJogador) return;
+
+    const [nomeSala, sala] = salaDoJogador;
+    const jogo = sala.jogo;
+    if (!jogo) return;
+    const mensagem = jogo.pularTurno(socket.id);
+    io.to(nomeSala).emit('estadoAtual', {
+      j1: jogo.jogador1,
+      j2: jogo.jogador2,
+      turno: jogo.turno,
+      mensagem,
+      trocarTurno: true
+    });
+  })
 
   socket.on('reiniciarPartida', () => {
     const salaDoJogador = Object.entries(salas).find(([_, sala]) => sala.jogadores[socket.id]);
@@ -210,6 +231,7 @@ io.on('connection', (socket) => {
     jogo.on('tempo', (contagem) => {
       io.to(nomeSala).emit('tempo', contagem);
     });
+    io.to(nomeSala).emit('reinciarPartida')
     io.to(nomeSala).emit('estadoAtual', {
       j1: jogo.jogador1,
       j2: jogo.jogador2,
@@ -225,7 +247,7 @@ io.on('connection', (socket) => {
     const [nomeSala, sala] = salaDoJogador;
     const jogador = sala.jogadores[socket.id];
     const nome = jogador ? jogador.nome : 'Desconhecido';
-    console.log(`Jogador desconectado: ${socket.id} - Nome: ${nome}`);
+    // console.log(`Jogador desconectado: ${socket.id} - Nome: ${nome}`);
     if (sala.jogo) {
       sala.jogo.removerContador();
     }
@@ -233,13 +255,21 @@ io.on('connection', (socket) => {
       clearInterval(sala.intervaloReset);
       sala.intervaloReset = null;
     }
-    
+
+    // if (sala.jogo && Object.keys(sala.jogadores).length === 1) {
+    //   sala.status = 'esperando';
+    // }
+
+    if (sala.jogo && (sala.jogo.jogador1.socketId === socket.id || sala.jogo.jogador2.socketId === socket.id)){
+      sala.status = 'esperando'; // libera a sala para novo jogador
+    }
+
     delete sala.jogadores[socket.id];
     if (sala.jogo && (sala.jogo.jogador1.socketId === socket.id || sala.jogo.jogador2.socketId === socket.id)) {
       sala.jogo = null;
       sala.status = 'resetando';
       io.to(nomeSala).emit('mensagem', 'Um jogador saiu. A partida foi encerrada.');
-    
+
       let contagem = 3;
       if (!sala.intervaloReset) {
         sala.intervaloReset = setInterval(() => {
@@ -258,7 +288,7 @@ io.on('connection', (socket) => {
 
     if (Object.keys(sala.jogadores).length === 0) {
       delete salas[nomeSala];
-      console.log(`Sala ${nomeSala} removida.`);
+      // console.log(`Sala ${nomeSala} removida.`);
     }
   });
 
