@@ -1,5 +1,5 @@
 import express from 'express';
-import http from 'http';
+import http from 'node:http';
 import cors from 'cors';
 import path from 'path';
 import helmet from 'helmet';
@@ -9,10 +9,12 @@ import compression from 'compression';
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 app.use(helmet());
 app.use(compression());
-app.use(express.json()); 
 app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.json()); 
+
 
 // CORS com origem controlada
 app.use(cors({
@@ -20,7 +22,6 @@ app.use(cors({
   methods: ['GET', 'POST'],
 }))
 
-const server = http.createServer(app);
 
 app.get("/ping", (req, res) => {
   res.send('pong');
