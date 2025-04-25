@@ -33,6 +33,8 @@ class RPG extends EventEmitter {
   }
 
   reiniciar(id: string): void {
+    this.removerContador()
+    this.turno = id
     const jogador = this.getJogador(id)
     const oponente = this.getOponente(id)
     jogador.setBloqueado(false)
@@ -45,8 +47,6 @@ class RPG extends EventEmitter {
     oponente.vida = 200
     jogador.reiniciarEnergia()
     oponente.reiniciarEnergia()
-    this.turno = id
-    this.removerContador()
     this.reiniciarContador()
   }
 
@@ -127,7 +127,7 @@ class RPG extends EventEmitter {
       mensagem = `${atacante.nome} atacou causando ${dano} de dano!`;
     } else if (acao === 'defender' && atacante.getEnergia() >= 20) {
       atacante.defesaAtiva()
-      atacante.setEnergia(-20);
+      atacante.setEnergia(-10);
       mensagem = `${atacante.nome} está se defendendo.`;
     } else if (acao === 'habilidade' && atacante.getEnergia() > 50) {
       if (atacante.getEfeito() === true) {
@@ -213,14 +213,14 @@ class RPG extends EventEmitter {
   //   if (evento !== 'efeitoAtualizado') {
   //     this.removeAllListeners(evento); 
   //   }
+  //   // this.removeAllListeners();
   // })
-  // this.removeAllListeners();
   }
 
   reiniciarContador(): void {
     this.tempoRestante = 60
     this.jogoEncerrado = false
-    this.iniciarTurno()
+    // this.iniciarTurno()
   }
 
   iniciarTurno() {
@@ -264,7 +264,6 @@ class RPG extends EventEmitter {
         if (this.jogoEncerrado) return;
 
         const turnoAnterior = this.turno;
-          mensagem = `${jogador.nome} não fez nada. Turno perdido por tempo.`;
         
         // const jogador = this.getJogador(turnoAnterior);
         // if (!this.jaAgiu[turnoAnterior]) {
@@ -275,9 +274,14 @@ class RPG extends EventEmitter {
         //   this.jaAgiu[turnoAnterior] = false;
         //   delete this.acoesPendentes[turnoAnterior];
         // } else {
-        //   // Jogador agiu, mas não pulou voluntariamente (então chamamos pularTurno)
-        //   mensagem = this.pularTurno(turnoAnterior);
-        // }
+          //   // Jogador agiu, mas não pulou voluntariamente (então chamamos pularTurno)
+          //   mensagem = this.pularTurno(turnoAnterior);
+          // }
+            mensagem = `${jogador.nome} não fez nada. Turno perdido por tempo.`;
+            this.turno = this.getOponente(turnoAnterior).socketId;
+            this.getOponente(turnoAnterior).setEnergia(10);
+            this.jaAgiu[turnoAnterior] = false;
+            delete this.acoesPendentes[turnoAnterior];
         this.emit('turnoPulado', {
           jogadorId: turnoAnterior,
           mensagem

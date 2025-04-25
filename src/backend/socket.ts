@@ -5,6 +5,7 @@ import Jogador from "./jogador";
 import { RPG } from "./jogo";
 
 const io = new Server(server, {
+  connectionStateRecovery: {},
   cors: {
     origin: process.env.ALLOWED_ORIGINS?.split(','),
     methods: ['GET', 'POST']
@@ -97,7 +98,7 @@ io.on('connection', (socket) => {
 
       //  Verificar energia
       sala.jogo.on('estadoEnergia', ({ jogadorId, energiaAtual }) => {
-        io.to(jogadorId).emit('estadoEnergia', {jogadorId, energiaAtual});
+        io.to(jogadorId).emit('estadoEnergia', { jogadorId, energiaAtual });
       });
 
       // Quando usa a habilidade
@@ -238,6 +239,7 @@ io.on('connection', (socket) => {
       turno: jogo.turno,
       mensagem: '🔄 Jogo reiniciado!'
     });
+    jogo.iniciarTurno()
   });
 
   socket.on('disconnect', () => {
@@ -255,42 +257,30 @@ io.on('connection', (socket) => {
       clearInterval(sala.intervaloReset);
       sala.intervaloReset = null;
     }
-
-    // if (sala.jogo && Object.keys(sala.jogadores).length === 1) {
-    //   sala.status = 'esperando';
-    // }
-
-    if (sala.jogo && (sala.jogo.jogador1.socketId === socket.id || sala.jogo.jogador2.socketId === socket.id)){
-      sala.status = 'esperando'; // libera a sala para novo jogador
-    }
-
     delete sala.jogadores[socket.id];
-    if (sala.jogo && (sala.jogo.jogador1.socketId === socket.id || sala.jogo.jogador2.socketId === socket.id)) {
-      sala.jogo = null;
-      sala.status = 'resetando';
-      io.to(nomeSala).emit('mensagem', 'Um jogador saiu. A partida foi encerrada.');
-
-      let contagem = 3;
-      if (!sala.intervaloReset) {
-        sala.intervaloReset = setInterval(() => {
-          if (contagem > 0) {
-            io.to(nomeSala).emit('mensagem', `Voltando para tela inicial em ${contagem}...`);
-            contagem--;
-          } else {
-            clearInterval(sala.intervaloReset!);
-            sala.intervaloReset = null;
-            sala.status = 'esperando'; // libera a sala para novo jogador
-            io.to(nomeSala).emit('resetarParaEntrada');
-          }
-        }, 1000);
-      }
-    }
-
     if (Object.keys(sala.jogadores).length === 0) {
       delete salas[nomeSala];
       // console.log(`Sala ${nomeSala} removida.`);
+    } else {
+      sala.jogo = null;
+      sala.status = 'resetando'; 
+      io.to(nomeSala).emit('mensagem', 'Um jogador saiu. A partida foi encerrada.');
+      
+      let contagem = 3;
+      if (!sala.intervaloReset) {
+        sala.intervaloReset = setInterval(() => {
+          io.to(nomeSala).emit('mensagem', `Voltando para tela inicial em ${contagem}...`);
+          if (contagem <= 0) {
+            sala.jogo?.removerContador()
+            clearInterval(sala.intervaloReset!);
+            sala.intervaloReset = null;
+            io.to(nomeSala).emit('resetarParaEntrada');
+            sala.status = 'esperando'; 
+          }
+          contagem--;
+        }, 1000);
+      }
     }
   });
-
 });
 export { io }
