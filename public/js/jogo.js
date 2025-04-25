@@ -48,7 +48,7 @@ socket.on('reinciarPartida', () => {
 })
 
 socket.on('mostrarBotaoReiniciar', () => {
-  btnReiniciar.style.display = 'inline-block';
+  btnReiniciar.style.display = 'block';
 });
 
 socket.on('registrado', (jogador) => {
@@ -57,7 +57,7 @@ socket.on('registrado', (jogador) => {
   botoes.style.display = 'none'
   meuId = jogador.socketId;
   painelEntrada.style.display = 'none';
-  painelJogo.style.display = 'block';
+  painelJogo.style.display = 'grid';
   document.querySelector('.vs').style.animation = 'pulseSpin 1.6s ease-in-out infinite alternate';
   resetarBotes()
 });
@@ -73,6 +73,8 @@ socket.on('turnoPulado', ({ mensagem }) => {
 socket.on('estadoAtual', (estado) => {
 
   const meuJogador = estado.j1.socketId === meuId ? estado.j1 : estado.j2;
+  mensagemAguardar.style.gridArea = 'centro'
+  document.querySelector('.players').style.gridArea = 'players'
   btnHabilidade.style.animation = 'none'
   if (meuJogador.classe.efeito === true) {
     btnHabilidade.style.animation = 'habilidadePronta 600ms linear infinite'
@@ -80,12 +82,13 @@ socket.on('estadoAtual', (estado) => {
   adicionarLog(estado.mensagem)
 
   document.querySelector('.vs').style.animation = 'pulse 1s linear infinite';
-  document.getElementById('contador').style.display = 'block'
+  document.getElementById('contador').style.display = 'grid'
   mensagemAguardar.textContent = '';
   btnReiniciar.style.display = 'none';
-  jogador1Span.style.display = 'block'
-  jogador2Span.style.display = 'block'
-  jogador1Span.innerHTML = `<div><strong style="color: blue;">${estado.j1.nome}</strong><img class="classe-icon" src="./assets/avatar/${estado.j1.classe.nome}Avatar.png"><p>Vida: ${estado.j1.vida}</p>Energia: ${estado.j1.classe.energia}</div>`;
+
+  jogador1Span.style.display = 'flex'
+  jogador2Span.style.display = 'flex'
+  jogador1Span.innerHTML = `<div><img class="classe-icon" src="./assets/avatar/${estado.j1.classe.nome}Avatar.png"><strong style="color: blue;">${estado.j1.nome}</strong><p>Vida: ${estado.j1.vida}</p>Energia: ${estado.j1.classe.energia}</div>`;
   jogador2Span.innerHTML = `<div><img class="classe-icon" src="./assets/avatar/${estado.j2.classe.nome}Avatar.png"><strong style="color: red;">${estado.j2.nome}</strong><p>Vida: ${estado.j2.vida}</p><p>Energia: ${estado.j2.classe.energia}</p></div>`;
 
   atributos = estado.j1.socketId === meuId ? estado.j1.classe : estado.j2.classe;
@@ -95,15 +98,14 @@ socket.on('estadoAtual', (estado) => {
 
     document.getElementById('contador').style.display = 'none';
     statusTurno.textContent = '🏁 Fim de jogo!';
+    acaoSelecionada = null
     return
   } else if (estado.turno === meuId) {
     if (meuJogador.classe.efeito === false) {
       btnHabilidade.classList.add('active')
       btnHabilidade.disabled = true
     }
-
-    jogador1Span.style.display = 'block'
-    jogador2Span.style.display = 'block'
+ 
     botoes.style.display = 'flex'
     statusTurno.textContent = `${meuJogador.nome} é a sua vez!`;
 
@@ -135,7 +137,7 @@ socket.on('estadoHabilidade', (habilidadeDisponivel) => {
 });
 
 socket.on('tempo', (contagem) => {
-  document.getElementById('contador').textContent = `⏳ Tempo restante: ${contagem}s`;
+  document.getElementById('contador').textContent = `Tempo: ${contagem}`;
 });
 
 socket.on('jogadorAtordoado', () => {
@@ -199,6 +201,8 @@ socket.on('resetarParaEntrada', () => {
   statusTurno.textContent = '';
   mensagemAguardar.textContent = ''
   document.getElementById('contador').style.display = 'none'
+  mensagemAguardar.style.gridArea = 'centro'
+  document.querySelector('.players').style.gridArea = 'players'
   btnHabilidade.disabled = false
   btnAtacar.disabled = false
   btnDefender.disabled = false
@@ -299,9 +303,6 @@ btnPularTurno.addEventListener('click', () => {
 });
 
 btnReiniciar.addEventListener('click', () => {
-  socket.emit('reiniciarPartida');
   btnReiniciar.style.display = 'none';
-  btnHabilidade.disabled = false
-  btnAtacar.disabled = false
-  btnDefender.disabled = false
+  socket.emit('reiniciarPartida');
 })
