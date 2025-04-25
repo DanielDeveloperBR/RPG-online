@@ -1,0 +1,29 @@
+/* Botões e hovers */
+button:hover {
+    background: linear-gradient(to right, #00c853, #00bfa5);
+    transform: scale(1.05);
+  }
+  
+  #btnAtacar.active, #btnDefender.active, #btnHabilidade.active {
+    background: #1c1c1c;
+    color: #00ffc3;
+    box-shadow: none;
+  }
+  
+  #btnHabilidade:disabled, #btnDefender:disabled, #btnAtacar:disabled {
+    background: #333;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #777;
+  }
+  
+  #btnHabilidade:hover:not(:disabled) {
+    background: #222;
+  }
+
+  /* Cards */
+  .card-personagem button:hover {
+    background: linear-gradient(to right, #00e676, #00bfa5);
+    transform: scale(1.05);
+  }
+  

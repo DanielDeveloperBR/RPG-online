@@ -20,38 +20,11 @@
         width: 100%;
     }
 
-    .vs {
-        font-size: 1.5em;
-        margin: 10px 0;
-    }
 
     input[type="text"] {
         width: 100%;
         margin-bottom: 10px;
         margin: 0;
-    }
-
-    .btns {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-content: center;
-        justify-content: center;
-        max-width: 600px;
-        margin: auto;
-        width: 100%;
-        align-items: center;
-    }
-
-    button {
-        font-size: 1em;
-        width: 100%;
-        max-width: 150px;
-    }
-
-    #log {
-        font-size: 0.8em;
-        height: 120px;
     }
 
     footer {
@@ -61,6 +34,13 @@
     .cards-container {
         grid-template-columns: 1fr;
 
+    }
+
+    #log,
+    #contador {
+        font-size: 0.9rem;
+        padding: 0 10px;
+        word-break: break-word;
     }
 }
 
@@ -113,63 +93,3 @@
         height: 60px;
     }
 }
-
-@media (max-width: 768px) {
-    .painel {
-      padding: 10px;
-    }
-  
-    .arena {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      justify-items: center;
-      text-align: center;
-    }
-  
-    .arena .player {
-      width: 90%;
-    }
-  
-    .vs {
-      font-size: 2rem;
-      order: -1; /* Coloca o "VS" no topo */
-    }
-  
-    .btns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 20px;
-    }
-  
-    #btnReiniciar, #pularTurno {
-      grid-column: span 2;
-    }
-  
-    #log, #contador {
-      font-size: 0.9rem;
-      padding: 0 10px;
-      word-break: break-word;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .btns {
-      grid-template-columns: 1fr;
-    }
-  
-    .btns button {
-      width: 100%;
-    }
-  
-    .card-personagem {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-  
-    input#nome {
-      width: 100%;
-    }
-  }
-  
