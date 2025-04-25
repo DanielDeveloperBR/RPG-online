@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/responsivo.css">
   <link rel="stylesheet" href="/css/animacao.css">
+  <link rel="stylesheet" href="/css/hover.css">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
 
 </head>
@@ -49,37 +50,29 @@
 
   </div>
  
-  <div class="painel" id="painelJogo" style="display: none;">
-
-    <div class="arena">
-      <div class="player" id="player1">
-        <div class="info"><span id="jogador1"></span></div>
-      </div>
-
+ <!-- Jogo -->
+  <div id="painelJogo" style="display: none;">
+    <div class="players">
+      <div id="jogador1"></div>
       <div class="vs">VS</div>
-
-      <div class="player" id="player2">
-        <div class="info"><span id="jogador2"></span></div>
-      </div>
+      <div id="jogador2"></div>
     </div>
-
-    <h2 id="statusTurno"></h2>
-
+  
+    <div id="statusTurno"></div>
+    <div id="contador" style="display:none;"></div>
+    <div id="msgAguardar"></div>
+  
     <div class="btns">
-      <button id="btnAtacar"  class="btnAcao" value="atacar">⚔️ Atacar</button>
-      <button id="btnDefender"  class="btnAcao" value="defender">🛡️ Defender</button>
-      <button id="btnHabilidade"  class="btnAcao" value="habilidade">✨ Habilidade</button>
-      <button id="pularTurno">Pular jogada</button>
-
+      <button id="btnAtacar" value="atacar">⚔️ Atacar</button>
+      <button id="btnDefender" value="defender">🛡️ Defender</button>
+      <button id="btnHabilidade" value="habilidade">✨ Habilidade</button>
+      <button id="pularTurno">Pular Turno</button>
     </div>
-
+    <button id="btnReiniciar" style="display: none;">Reiniciar</button>
+  
     <div id="log"></div>
-    <div id="contador"></div>
-    <p id="msgAguardar" style="color: orange"></p>
-    <button id="btnReiniciar" style="display: none;">Reiniciar Partida</button>
-
   </div>
-
+  
   <footer>&copy; Desenvolvido por Daniel S.</footer>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/jogo.js"></script>
