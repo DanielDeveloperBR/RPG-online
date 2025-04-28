@@ -22,13 +22,12 @@ const btnPularTurno = document.getElementById('pularTurno');
 
 let acaoSelecionada = null;
 
-
 const arena = document.querySelector('.arena')
 
 const botoes = document.querySelector('.btns')
 
-let classeEscolhida
 let atributos
+let classeEscolhida
 
 document.querySelectorAll('.selecionar').forEach(button => {
   button.addEventListener('click', (e) => {
@@ -40,7 +39,11 @@ entrarBtn.addEventListener('click', (e) => {
   e.preventDefault()
   const classe = classeEscolhida
   nome = nomeInput.value.trim();
-  if (nome !== '') socket.emit('registrarJogador', nome, classe);
+  if (nome === '' || classe === ''){
+    alert('Preencha todos os campos!')
+    return
+  }
+    socket.emit('registrarJogador', nome, classe);
 })
 
 socket.on('reinciarPartida', () => {
