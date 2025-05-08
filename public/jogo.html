@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Jogo de RPG de turnos online, onde você ataca, defende e usa habilidades para derrotar o oponente. Começam com 100 de vidas e quem chegar a zero perde.">
+  <title>Jogo de Turno RPG</title>
+  <link rel="shortcut icon" href="/assets/nerd.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsivo.css">
+  <link rel="stylesheet" href="/css/animacao.css">
+  <link rel="stylesheet" href="/css/hover.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+  <div id="tooltip" class="tooltip"></div>
+  <!-- Jogo -->
+  <div id="painelJogo" style="display: none;">
+    <div class="players">
+      <div id="jogador1"></div>
+      <div class="vs">VS</div>
+      <div id="jogador2"></div>
+    </div>
+
+    <div id="statusTurno"></div>
+    <div id="contador" style="display:none;"></div>
+    <div id="msgAguardar"></div>
+
+    <div class="btns">
+      <button id="btnAtacar" value="atacar">⚔️ Atacar</button>
+      <button id="btnDefender" value="defender">🛡️ Defender</button>
+      <button id="btnHabilidade" value="habilidade">✨ Habilidade</button>
+      <button id="pularTurno">Pular Turno</button>
+    </div>
+    <button id="btnReiniciar" style="display: none;">Reiniciar</button>
+
+    <div id="log"></div>
+  </div>
+
+  <footer>&copy; Desenvolvido por Daniel S.</footer>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/jogo.js"></script>
+</body>
+
+</html>
