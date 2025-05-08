@@ -20,12 +20,11 @@ const btnDefender = document.getElementById('btnDefender');
 const btnHabilidade = document.getElementById('btnHabilidade');
 const btnPularTurno = document.getElementById('pularTurno');
 
-let acaoSelecionada = null;
-
 const arena = document.querySelector('.arena')
 
 const botoes = document.querySelector('.btns')
 
+let acaoSelecionada = null;
 let atributos
 let classeEscolhida
 
@@ -53,14 +52,14 @@ socket.on('reinciarPartida', () => {
 socket.on('mostrarBotaoReiniciar', () => {
   btnReiniciar.style.display = 'block';
 });
-
+function styleDisplay(elementos, elementoVisivel, displayVisivel = 'grid', displayOculto = 'none') {
+  elementos.forEach((item) => {
+    item.style.display = (item === elementoVisivel) ? displayVisivel : displayOculto;
+  });
+}
 socket.on('registrado', (jogador) => {
-  jogador1Span.style.display = 'none'
-  jogador2Span.style.display = 'none'
-  botoes.style.display = 'none'
+  styleDisplay([jogador1Span, jogador2Span, botoes, painelEntrada, painelJogo],painelJogo,'grid','none')
   meuId = jogador.socketId;
-  painelEntrada.style.display = 'none';
-  painelJogo.style.display = 'grid';
   document.querySelector('.vs').style.animation = 'pulseSpin 1.6s ease-in-out infinite alternate';
   resetarBotes()
 });
@@ -204,8 +203,8 @@ socket.on('resetarParaEntrada', () => {
   statusTurno.textContent = '';
   mensagemAguardar.textContent = ''
   document.getElementById('contador').style.display = 'none'
-  mensagemAguardar.style.gridArea = 'centro'
-  document.querySelector('.players').style.gridArea = 'players'
+  mensagemAguardar.style.gridArea = 'players-end'
+  document.querySelector('.players').style.gridArea = 'centro'
   btnHabilidade.disabled = false
   btnAtacar.disabled = false
   btnDefender.disabled = false
@@ -283,17 +282,14 @@ configurarTooltip(btnHabilidade, () =>
 
 btnAtacar.addEventListener('click', () => {
   selecionarBotoes(btnAtacar)
-  // if (botao) socket.emit('acaoDoJogador', { tipo: 'atacar' });
 });
 
 btnDefender.addEventListener('click', () => {
   selecionarBotoes(btnDefender)
-  // if (botao) socket.emit('acaoDoJogador', { tipo: 'defender' });
 });
 
 btnHabilidade.addEventListener('click', () => {
   selecionarBotoes(btnHabilidade)
-  // if (botao) socket.emit('acaoDoJogador', { tipo: 'habilidade' });
 })
 
 btnPularTurno.addEventListener('click', () => {
