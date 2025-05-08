@@ -11,19 +11,22 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-let salas: {
-  [nomeDaSala: string]: {
-    jogadores: { [id: string]: Jogador };
-    jogo: RPG | null;
-    intervaloReset?: NodeJS.Timeout | null;
-    status: 'esperando' | 'completa' | 'emJogo' | 'resetando';
-  };
-} = {};
+type StatusDaSala = 'esperando' | 'completa' | 'emJogo' | 'resetando';
 
-const barbaro = Classes.criarClasse("barbaro", 80, 20, 50, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno.',)
-const mago = Classes.criarClasse("mago", 100, 10, 80, 60, 'Bola de Fogo: Dano em área e ignora defesa.',)
-const arqueiro = Classes.criarClasse("arqueiro", 90, 15, 40, 50, 'Tiro Certeiro: Ataque preciso, chance de crítico e ignora defesa.',)
+interface Sala {
+  jogadores: { [id: string]: Jogador };
+  jogo: RPG | null;
+  intervaloReset?: NodeJS.Timeout | null;
+  status: StatusDaSala;
+}
 
+// Estado global das salas
+const salas: { [nome: string]: Sala } = {};
+
+function criarClassePorNome(nome: string) {
+  const classes: { [nome: string]: () => any } = {barbaro: () => Classes.criarClasse("barbaro", 80, 20, 50, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno.'), mago: () => Classes.criarClasse("mago", 100, 10, 80, 60, 'Bola de Fogo: Dano em área e ignora defesa.'), arqueiro: () => Classes.criarClasse("arqueiro", 90, 15, 40, 50, 'Tiro Certeiro: Ataque preciso, chance de crítico e ignora defesa.')};
+  return classes[nome]?.();
+}
 io.on('connection', (socket) => {
 
   // console.log('Novo jogador conectado:', socket.id);
@@ -65,21 +68,12 @@ io.on('connection', (socket) => {
     socket.join(nomeSala);
 
     const id = Object.keys(sala.jogadores).length + 1;
-    let classeEscolhida;
+    
+    const classeEscolhida = criarClassePorNome(classe);
 
-    switch (classe) {
-      case 'barbaro':
-        classeEscolhida = Classes.criarClasse("barbaro", 80, 20, 50, 70, 'Fúria, Valor de ataque alto e paralisa o inimigo por 1 turno.')
-        break;
-      case 'mago':
-        classeEscolhida = Classes.criarClasse("mago", 100, 10, 80, 60, 'Bola de Fogo: Dano em área e ignora defesa.')
-        break;
-      case 'arqueiro':
-        classeEscolhida = Classes.criarClasse("arqueiro", 90, 15, 40, 50, 'Tiro Certeiro: Ataque preciso, chance de crítico e ignora defesa.')
-        break;
-      default:
-        socket.emit('erro', 'Classe inválida.');
-        return;
+    if (!classeEscolhida) {
+      socket.emit('erro', 'Classe inválida.');
+      return;
     }
 
     const novoJogador = new Jogador(id, socket.id, nome, 200, classeEscolhida)
@@ -247,8 +241,6 @@ io.on('connection', (socket) => {
     if (!salaDoJogador) return;
 
     const [nomeSala, sala] = salaDoJogador;
-    const jogador = sala.jogadores[socket.id];
-    const nome = jogador ? jogador.nome : 'Desconhecido';
     // console.log(`Jogador desconectado: ${socket.id} - Nome: ${nome}`);
     if (sala.jogo) {
       sala.jogo.removerContador();
@@ -258,14 +250,12 @@ io.on('connection', (socket) => {
       sala.intervaloReset = null;
     }
     delete sala.jogadores[socket.id];
-    if (Object.keys(sala.jogadores).length === 0) {
+    if (Object.keys(sala.jogadores).length <= 1) {
       delete salas[nomeSala];
       // console.log(`Sala ${nomeSala} removida.`);
-    } else {
+      sala.status = 'resetando';
       sala.jogo = null;
-      sala.status = 'resetando'; 
       io.to(nomeSala).emit('mensagem', 'Um jogador saiu. A partida foi encerrada.');
-      
       let contagem = 3;
       if (!sala.intervaloReset) {
         sala.intervaloReset = setInterval(() => {
@@ -275,12 +265,12 @@ io.on('connection', (socket) => {
             clearInterval(sala.intervaloReset!);
             sala.intervaloReset = null;
             io.to(nomeSala).emit('resetarParaEntrada');
-            sala.status = 'esperando'; 
+            sala.status = 'esperando';
           }
           contagem--;
         }, 1000);
       }
     }
-  });
-});
+  })
+})
 export { io }
